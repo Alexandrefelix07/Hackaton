@@ -1,30 +1,43 @@
-public class CaseCreator {
-    private static final String ENDPOINT = 'https://your-instance.salesforce.com/services/data/v50.0/sobjects/Case';
-    private static final String AUTHORIZATION = 'Bearer YOUR_ACCESS_TOKEN';
-    
-    public void createCase(String subject, String description, String priority) {
-        HttpRequest req = buildHttpRequest(subject, description, priority);
-        HttpResponse res = new Http().send(req);
-        // Handle the response as needed.
-    }
+public with sharing class CaseCreator {
+    private static final String ENDPOINT = 'https://api.openai.com';
+    private static final String AUTHORIZATION_TOKEN = '{your_API_token}'; 
+    private static final String CONTENT_TYPE = 'application/json';
+    private static final String METHOD_TYPE = 'POST'; 
+    private static final String DEFAULT_PRIORITY = 'Medium';
 
-    private HttpRequest buildHttpRequest(String subject, String description, String priority) {
+    public static String analyzeEmail(String emailBody) {
+
+        HttpRequest req = setupHttpRequest(emailBody);
+        Http http = new Http();
+        HTTPResponse res = executeHttpRequest(http, req);
+        handleResponse(res);
+        return determinePriority();
+    }
+    
+    private static HttpRequest setupHttpRequest(String emailBody){
         HttpRequest req = new HttpRequest();
-        req.setHeader('Content-Type', 'application/json');
-        req.setHeader('Authorization', AUTHORIZATION);
         req.setEndpoint(ENDPOINT);
-        req.setMethod('POST');
-        req.setBody(buildCaseData(subject, description, priority));
+        req.setHeader('Authorization', AUTHORIZATION_TOKEN); 
+        req.setHeader('Content-Type', CONTENT_TYPE);
+        req.setMethod(METHOD_TYPE); 
+        req.setBody(emailBody);
         return req;
     }
-
-    private String buildCaseData(String subject, String description, String priority) {
-        Map<String, String> caseData = new Map<String, String>{
-            'Subject' => subject,
-            'Description' => description,
-            'Priority' => priority
-            // Add other relevant fields here.
-        };
-        return JSON.serialize(caseData);
+    
+    private static HTTPResponse executeHttpRequest(Http http, HttpRequest req){
+        return http.send(req);
+    }
+    
+    private static void handleResponse(HTTPResponse res){
+        if(res.getStatusCode() == 200){
+            String response = res.getBody();
+        }
+        else{
+            System.debug('HTTP request failed with status code: '+ res.getStatusCode());
+        }
+    }
+    
+    private static String determinePriority(){
+        return DEFAULT_PRIORITY;
     }
 }
