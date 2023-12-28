@@ -10,7 +10,6 @@ public without sharing class AnalyzeCase_TriggerHandler extends TriggerHandler {
     }
 
     public override void  beforeInsert () {    
-
         
     }
 
