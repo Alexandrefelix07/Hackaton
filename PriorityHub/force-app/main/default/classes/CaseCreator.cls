@@ -1,10 +1,8 @@
-
-public with sharing class CaseCreator implements Queueable {
-    private static final String ENDPOINT = 'https://api.openai.com';
-    private static final String AUTHORIZATION_TOKEN = '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'; 
+public with sharing class CaseCreator implements Queueable, Database.AllowsCallouts {
+    private static final String ENDPOINT = 'https://api.openai.com/v1/engines/davinci/completions';
+    private static final String AUTHORIZATION_TOKEN = 'Bearer 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'; 
     private static final String CONTENT_TYPE = 'application/json';
     private static final String METHOD_TYPE = 'POST'; 
-    private static final String PRIORITY = 'Medium';
     private String emailBody;
 
     public CaseCreator(String emailBody) {
@@ -19,6 +17,7 @@ public with sharing class CaseCreator implements Queueable {
         HttpRequest req = setupHttpRequest(emailBody);
         Http http = new Http();
         HTTPResponse res = http.send(req);
+        System.debug(res.getBody());
         handleResponse(res);
     }
 
@@ -28,7 +27,8 @@ public with sharing class CaseCreator implements Queueable {
         req.setHeader('Authorization', AUTHORIZATION_TOKEN); 
         req.setHeader('Content-Type', CONTENT_TYPE);
         req.setMethod(METHOD_TYPE); 
-        req.setBody(emailBody);
+        String requestBody = '{"prompt": "' + emailBody + '"}';
+        req.setBody(requestBody);
         return req;
     }
 
@@ -42,3 +42,4 @@ public with sharing class CaseCreator implements Queueable {
         }
     }
 }
+
