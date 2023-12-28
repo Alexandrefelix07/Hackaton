@@ -1,9 +1,9 @@
 public with sharing class CaseCreator {
     private static final String ENDPOINT = 'https://api.openai.com';
-    private static final String AUTHORIZATION_TOKEN = '{your_API_token}'; 
+    private static final String AUTHORIZATION_TOKEN = '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'; 
     private static final String CONTENT_TYPE = 'application/json';
     private static final String METHOD_TYPE = 'POST'; 
-    private static final String DEFAULT_PRIORITY = 'Medium';
+    private static final String PRIORITY = 'Medium';
 
     public static String analyzeEmail(String emailBody) {
 
@@ -31,6 +31,8 @@ public with sharing class CaseCreator {
     private static void handleResponse(HTTPResponse res){
         if(res.getStatusCode() == 200){
             String response = res.getBody();
+            //logica para tratar o retorno do GPT caso for prioridade 
+
         }
         else{
             System.debug('HTTP request failed with status code: '+ res.getStatusCode());
@@ -38,6 +40,6 @@ public with sharing class CaseCreator {
     }
     
     private static String determinePriority(){
-        return DEFAULT_PRIORITY;
+        return PRIORITY;
     }
 }
