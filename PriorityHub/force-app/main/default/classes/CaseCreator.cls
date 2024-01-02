@@ -1,9 +1,11 @@
 public with sharing class CaseCreator implements Queueable, Database.AllowsCallouts {
     private static final String ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
     private static final String AUTHORIZATION_TOKEN = 'AIzaSyBFHmyRl8iJtQeHNYCu7qG7hZegCNO-prw'; 
-    private static final String MODELID = 'gemini-pro';
+    private static final String MODEL_ID = 'gemini-pro';
     private static final String CONTENT_TYPE = 'application/json';
     private static final String METHOD_TYPE = 'POST'; 
+    private static final String API_KEY_PARAM = 'key=' + AUTHORIZATION_TOKEN;
+    
     private String emailBody;
 
     public CaseCreator(String emailBody) {
@@ -17,32 +19,41 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
     private void analyzeEmail(String emailBody) {
         HttpRequest req = setupHttpRequest(emailBody);
         Http http = new Http();
-        HTTPResponse res = http.send(req);
+        HttpResponse res = http.send(req);
         handleResponse(res);
     }
 
-
-    private HttpRequest setupHttpRequest(String emailBody){
+    private HttpRequest setupHttpRequest(String emailBody) {
         HttpRequest req = new HttpRequest();
-        String url = ENDPOINT + MODELID + ':generateContent?key=' + AUTHORIZATION_TOKEN;
+        String url = ENDPOINT + MODEL_ID + ':GenerateContent?' + API_KEY_PARAM;
+        
         req.setEndpoint(url);
         req.setHeader('Content-Type', CONTENT_TYPE);
         req.setMethod(METHOD_TYPE); 
-        req.setBody('{"contents": [{"parts":[{"text": "' + emailBody + '"}]}]}');
+
+        Map<String, Object> requestBody = new Map<String, Object>{
+            'contents' => new List<Map<String, Object>>{
+                new Map<String, Object>{
+                    'parts' => new List<Map<String, String>>{
+                        new Map<String, String>{
+                            'text' => emailBody
+                        }
+                    }
+                }
+            }
+        };
+
+        req.setBody(JSON.serialize(requestBody));
         return req;
     }
 
-    private void handleResponse(HTTPResponse res){
-        if(res.getStatusCode() == 200){
+    private void handleResponse(HttpResponse res) {
+        System.debug('GptResponse: ' + res); 
+        if (res.getStatusCode() == 200) {
             String response = res.getBody();
-            Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) jsonResponse.get('candidates');
-            String gptResponse = (String) candidates[0].get('output');
-            System.debug('GptResponse: '+ response);   
-        }
-        else{
-            System.debug('HTTP request failed with status code: '+ res.getStatusCode());
+            System.debug('GptResponse: ' + response);   
+        } else {
+            System.debug('HTTP request failed with status code: ' + res.getStatusCode());
         }
     }
 }
-
