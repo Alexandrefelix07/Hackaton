@@ -1,6 +1,7 @@
 public with sharing class CaseCreator implements Queueable, Database.AllowsCallouts {
-    private static final String ENDPOINT = 'https://api.openai.com/v1/engines/davinci/completions';
-    private static final String AUTHORIZATION_TOKEN = 'Bearer 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'; 
+    private static final String ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta2/models/';
+    private static final String AUTHORIZATION_TOKEN = 'AIzaSyBFHmyRl8iJtQeHNYCu7qG7hZegCNO-prw'; 
+    private static final String MODELID = 'gemini-pro';
     private static final String CONTENT_TYPE = 'application/json';
     private static final String METHOD_TYPE = 'POST'; 
     private String emailBody;
@@ -23,12 +24,11 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
 
     private HttpRequest setupHttpRequest(String emailBody){
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(ENDPOINT);
-        req.setHeader('Authorization', AUTHORIZATION_TOKEN); 
+        String url = ENDPOINT + MODELID + ':generateText?key=' + AUTHORIZATION_TOKEN;
+        req.setEndpoint(url);
         req.setHeader('Content-Type', CONTENT_TYPE);
         req.setMethod(METHOD_TYPE); 
-        String requestBody = '{"prompt": "' + emailBody + '"}';
-        req.setBody(requestBody);
+        req.setBody('{"prompt": {"text": "' + emailBody + '"}}');
         return req;
     }
 
@@ -36,6 +36,10 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
         if(res.getStatusCode() == 200){
             String response = res.getBody();
             System.debug('HTTP response: '+ response);
+            Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) jsonResponse.get('candidates');
+            String gptResponse = (String) candidates[0].get('output');
+            System.debug('GptResponse: '+ response);   
         }
         else{
             System.debug('HTTP request failed with status code: '+ res.getStatusCode());
