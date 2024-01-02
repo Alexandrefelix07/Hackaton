@@ -31,7 +31,7 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
         req.setHeader('Content-Type', CONTENT_TYPE);
         req.setMethod(METHOD_TYPE);
 
-        String requestBody = '{"contents": [{"parts":[{"text": " analisar e determinar se o caso deve ser urgente : ' + emailBody + '"}]}]}';
+        String requestBody = '{"contents": [{"parts":[{"text": " analisar e determinar se o caso deve ser urgente e qual o Tipo para atualizar o caso no salesforce : ' + emailBody + '"}]}]}';
         req.setBody(requestBody);
 
         System.debug('GPT Request Body: ' + requestBody); 
@@ -72,3 +72,6 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
     }
         
 }
+
+
+
