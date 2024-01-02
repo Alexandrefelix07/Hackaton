@@ -4,7 +4,6 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
     private static final String MODEL_ID = 'gemini-pro';
     private static final String CONTENT_TYPE = 'application/json';
     private static final String METHOD_TYPE = 'POST'; 
-    private static final String API_KEY_PARAM = 'key=' + AUTHORIZATION_TOKEN;
     
     private String emailBody;
 
@@ -25,25 +24,16 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
 
     private HttpRequest setupHttpRequest(String emailBody) {
         HttpRequest req = new HttpRequest();
-        String url = ENDPOINT + MODEL_ID + ':GenerateContent?' + API_KEY_PARAM;
-        
+        String url = ENDPOINT + MODEL_ID + ':generateContent?key=' + AUTHORIZATION_TOKEN;
+    
         req.setEndpoint(url);
         req.setHeader('Content-Type', CONTENT_TYPE);
-        req.setMethod(METHOD_TYPE); 
-
-        Map<String, Object> requestBody = new Map<String, Object>{
-            'contents' => new List<Map<String, Object>>{
-                new Map<String, Object>{
-                    'parts' => new List<Map<String, String>>{
-                        new Map<String, String>{
-                            'text' => emailBody
-                        }
-                    }
-                }
-            }
-        };
-
-        req.setBody(JSON.serialize(requestBody));
+        req.setMethod(METHOD_TYPE);
+    
+        String requestBody = '{"contents": [{"parts":[{"text": "' + emailBody + '"}]}]}';
+        req.setBody(requestBody);
+    
+        System.debug('GPT Request Body: ' + requestBody); 
         return req;
     }
 
