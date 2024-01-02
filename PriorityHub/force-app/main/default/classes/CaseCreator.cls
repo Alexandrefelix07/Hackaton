@@ -4,6 +4,7 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
     private static final String MODEL_ID = 'gemini-pro';
     private static final String CONTENT_TYPE = 'application/json';
     private static final String METHOD_TYPE = 'POST'; 
+    private static final Integer RATE_LIMIT = 60;
       
     private Id caseId;
 
@@ -12,8 +13,27 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
     }
 
     public void execute(QueueableContext context) {
+        // if (isRateLimitExceeded()) {
+        //     // Não execute a chamada se o limite de taxa for excedido
+        //     System.debug('Limite de taxa excedido. Consulta não realizada.');
+        //     return;
+        // }
         analyzeCase(caseId);
+        //updateRateLimit();
     }
+
+    
+    // private Boolean isRateLimitExceeded() {
+    //     DateTime oneMinuteAgo = DateTime.now().addMinutes(-1);
+    //     Integer calloutCount = [SELECT COUNT() FROM Rate_Limit_Log__c WHERE Timestamp__c >= :oneMinuteAgo];
+    //     return calloutCount >= RATE_LIMIT;
+    // }
+
+    // private void updateRateLimit() {
+    //     // Cria um novo registro no log de controle de taxa
+    //     insert new Rate_Limit_Log__c(Timestamp__c = DateTime.now());
+    // }
+
 
     private void analyzeCase(Id caseId) {
         Case caseToAnalyze = [SELECT Id, Description FROM Case WHERE Id = :caseId LIMIT 1];
@@ -31,7 +51,7 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
         req.setHeader('Content-Type', CONTENT_TYPE);
         req.setMethod(METHOD_TYPE);
 
-        String requestBody = '{"contents": [{"parts":[{"text": " analisar e determinar se o caso deve ser urgente e qual o Tipo para atualizar o caso no salesforce : ' + emailBody + '"}]}]}';
+        String requestBody = '{"contents": [{"parts":[{"text": " analisar e determinar se o caso deve ser urgente em poucas palavras : ' + emailBody + '"}]}]}';
         req.setBody(requestBody);
 
         System.debug('GPT Request Body: ' + requestBody); 
@@ -47,6 +67,7 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
             if (isUrgent) {
                 // Atualizar o caso para o status "Urgente"
                 updateCaseToUrgent(caseToAnalyze);
+                //respondToCaseByEmail(caseToAnalyze);
             }
 
         } else {
@@ -70,8 +91,22 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
             System.debug('Erro ao atualizar caso para urgente: ' + e.getMessage());
         }
     }
+
+    private void respondToCaseByEmail(Case caseToRespond) {
+        String emailSubject = 'Resposta ao Caso ' + caseToRespond.CaseNumber;
+        String emailBody = 'Seu caso é urgente. Aqui estão algumas instruções adicionais...'; // Adicione o corpo do e-mail conforme necessário
+
+        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        email.setToAddresses(new String[]{caseToRespond.ContactEmail});
+        email.setSubject(emailSubject);
+        email.setPlainTextBody(emailBody);
+
+        Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email});
+    }
         
 }
+
+
 
 
 
