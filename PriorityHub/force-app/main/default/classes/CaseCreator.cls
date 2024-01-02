@@ -72,6 +72,3 @@ public with sharing class CaseCreator implements Queueable, Database.AllowsCallo
     }
         
 }
-
-
-
