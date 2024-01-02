@@ -1,5 +1,5 @@
 public with sharing class CaseCreator implements Queueable, Database.AllowsCallouts {
-    private static final String ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
+    private static final String ENDPOINT = 'https://generativelanguage.googleapis.com/v1/models/';
     private static final String AUTHORIZATION_TOKEN = 'AIzaSyBFHmyRl8iJtQeHNYCu7qG7hZegCNO-prw'; 
     private static final String MODEL_ID = 'gemini-pro';
     private static final String CONTENT_TYPE = 'application/json';
