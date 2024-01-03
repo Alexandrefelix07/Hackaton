@@ -8,5 +8,3 @@
 trigger AnalyzeCaseTrigger on Case (after insert) {
     new AnalyzeCase_TriggerHandler().run();
 }
-
-
